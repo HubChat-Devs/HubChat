@@ -1,15 +1,11 @@
 import React from 'react';
 import {
   View,
-  Button,
   Text,
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import AsyncStorage from '@react-native-community/async-storage';
 import IconButton from '../components/IconButton';
-import getGithubTokenAsync from '../getGithubTokenAsync';
-const GithubStorageKey = '@Expo:GithubToken';
 import signInAsync from '../firebase/signIn';
 
 const SignIn = ({ route, navigation }) => (

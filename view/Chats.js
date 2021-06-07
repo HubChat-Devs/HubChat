@@ -1,16 +1,13 @@
-import React, { setState, useState, useEffect } from 'react';
+import React, { setState, useState, useEffect,useCallback } from 'react';
 import {
   StyleSheet,
   Text,
   View,
   Image,
   TouchableOpacity,
-  Alert,
-  ScrollView,
   FlatList,
 } from 'react-native';
 import Loading from '../components/Loading';
-import { AntDesign as Icon } from '@expo/vector-icons';
 import { FAB } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import moment from 'moment';
@@ -70,7 +67,7 @@ const Chats = ({ route, navigation }) => {
     }
   }
 
-  async function fetchChats() {
+const  fetchChats = useCallback(() => {
     const unsubscribe = db
       .collection('CHATS')
       .where('members', 'array-contains', firebase.auth().currentUser.uid)
@@ -115,15 +112,19 @@ const Chats = ({ route, navigation }) => {
      * unsubscribe listener
      */
     return () => unsubscribe();
-  }
+  },[loading,currentUserGit.id])
+
   useEffect(() => {
-    if (currentUserGit.login == null) {
-      console.log('Atualizando User');
-      UserData(setCurrentUserGit);
+    async function fetchData(){
+      if (currentUserGit.login == null) {
+        console.log('Atualizando User');
+        await UserData(setCurrentUserGit);
     } else {
-      fetchChats(currentUserGit);
+        await fetchChats(currentUserGit);
     }
-  }, [currentUserGit]);
+    }
+    fetchData();
+  }, [fetchChats,currentUserGit]);
 
   if (loading) {
     return <Loading />;

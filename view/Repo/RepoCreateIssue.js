@@ -4,7 +4,6 @@ import {
   TextInput,
   Text,
   StyleSheet,
-  TouchableOpacity,
 } from 'react-native';
 import * as yup from 'yup';
 import { Button, Colors } from 'react-native-paper';

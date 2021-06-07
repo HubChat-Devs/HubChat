@@ -1,9 +1,7 @@
 import React from 'react';
-import { View, Button, Text, Image, StyleSheet } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { HeaderBackButton } from '@react-navigation/stack';
 import { Octicons,Entypo,EvilIcons} from '@expo/vector-icons';
 import 'react-native-gesture-handler';
 
@@ -17,7 +15,6 @@ import ReposSearch from './view/ReposSearch';
 import ReposRotas from './view/Repo/RepoRotas'
 import IssueSearch from './view/IssueSearch';
 import Minha_Conta from './view/MyAccountList';
-import signOutAsync from './view/AfterLogin';
 
 const Stack = createStackNavigator();
 const Tab = createMaterialTopTabNavigator();

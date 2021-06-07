@@ -3,10 +3,7 @@ import {
   StyleSheet,
   Text,
   View,
-  Image,
   TouchableOpacity,
-  Alert,
-  ScrollView,
   FlatList,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
