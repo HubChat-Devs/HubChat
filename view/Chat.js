@@ -1,5 +1,5 @@
-import React, { setState, useState, useEffect } from 'react';
-import { Text, View } from 'react-native';
+import React, {  useState, useEffect } from 'react';
+import { View } from 'react-native';
 import { GiftedChat, Send } from 'react-native-gifted-chat';
 import { FontAwesome as Icon } from '@expo/vector-icons';
 import firebase from '../firebase/fire';

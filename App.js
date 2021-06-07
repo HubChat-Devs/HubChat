@@ -1,11 +1,9 @@
-import React, { setState, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-community/async-storage';
-import { Image, Text, View, StyleSheet } from 'react-native';
 import firebase from './firebase/fire';
-import getGithubTokenAsync from './getGithubTokenAsync';
 import AfterLogin from './view/AfterLogin';
 import Rotas from './Rotas';
 import SignInScreen, { signInAsync } from './view/SignIn';

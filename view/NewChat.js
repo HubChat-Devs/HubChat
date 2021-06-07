@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect , useCallback } from 'react';
 import {
   StyleSheet,
   Text,
   View,
   Image,
   TouchableOpacity,
-  Alert,
-  ScrollView,
   FlatList,
 } from 'react-native';
 import { AntDesign as Icon } from '@expo/vector-icons';
@@ -22,7 +20,6 @@ const Issues = ({ route, navigation }) => {
   const [filteredDataSource, setFilteredDataSource] = useState([]);
   const [masterDataSource, setMasterDataSource] = useState([]);
   const [chatName, setChatName] = useState('');
-  const [chats, setChats] = useState({});
   const [loading, setLoading] = useState(true);
   const db = firebase.firestore();
   const [currentUserGit, setCurrentUserGit] = useState({});
@@ -92,7 +89,7 @@ const Issues = ({ route, navigation }) => {
         navigation.navigate('Chats');
       });
   }
-  async function fetchUSERS() {
+const fetchUSERS = useCallback(() => {
     db.collection('USERS')
       .where('uid', '!=', firebase.auth().currentUser.uid)
       .get()
@@ -111,11 +108,18 @@ const Issues = ({ route, navigation }) => {
       .catch((error) => {
         console.log('Error getting documents: ', error);
       });
-  }
+  },[db,loading])
 
   useEffect(() => {
-    fetchUSERS();
-  }, []);
+    async function fetchData(){
+        await fetchUSERS();
+    }
+    fetchData()
+  }, [fetchUSERS]);
+
+  if (loading) {
+    return <Loading />;
+  }
 
   const searchFilterFunction = (text) => {
     // Check if searched text is not blank

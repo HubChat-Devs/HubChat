@@ -4,8 +4,6 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Alert,
-  ScrollView,
   FlatList,
 } from 'react-native';
 import { FAB } from 'react-native-paper';

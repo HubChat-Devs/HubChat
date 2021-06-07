@@ -4,8 +4,6 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Alert,
-  ScrollView,
   FlatList,
 } from 'react-native';
 import { AntDesign as Icon } from '@expo/vector-icons';

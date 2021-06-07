@@ -1,6 +1,6 @@
-import React, { setState, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { View, Button, Image, Text, StyleSheet } from 'react-native';
+import { View, Image, Text, StyleSheet } from 'react-native';
 import IconButton from '../components/IconButton';
 import signOutAsync from '../firebase/signOut';
 import firebase from '../firebase/fire';

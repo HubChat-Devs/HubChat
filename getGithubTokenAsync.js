@@ -1,5 +1,5 @@
 import * as AuthSession from 'expo-auth-session';
-import {AsyncStorage } from '@react-native-community/async-storage';
+import {AsyncStorage } from '@react-native-async-storage/async-storage';
 
 // Make an app https://github.com/settings/applications/new
 // Firebase Docs: https://firebase.google.com/docs/auth/web/github-auth
