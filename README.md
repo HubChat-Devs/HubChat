@@ -21,7 +21,7 @@ Projeto Desenvolvido no Último semestre do curso de ADS (Iesb - 2021) <br>
 
 # Snack <br>
 
-Projeto no Snack - [Latest Version](snack.expo.io/@williamanjo/hubchat-integrando)
+Projeto no Snack - [Latest Version](https://snack.expo.io/@williamanjo/hubchat-integrando)
 
 
 
