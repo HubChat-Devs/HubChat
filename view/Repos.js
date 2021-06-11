@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,37 +8,56 @@ import {
 } from 'react-native';
 import { FAB } from 'react-native-paper';
 import { Octicons as Icon } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+const GithubStorageKey = '@Expo:GithubToken';
 
-function iconChange(item){
-    if(!item.private){
-      if(!item.fork){
-        return (<Icon name="repo" size={30} color="black" />)
-        
-      }else{
-        return (<Icon name="repo-forked" size={30} color="black" />)
-      }
-     }else{
-       return (<Icon name="lock" size={30} color="orange" />)
-     }
+function iconChange(item) {
+  if (!item.private) {
+    if (!item.fork) {
+      return <Icon name="repo" size={30} color="black" />;
+    } else {
+      return <Icon name="repo-forked" size={30} color="black" />;
+    }
+  } else {
+    return <Icon name="lock" size={30} color="orange" />;
+  }
 }
-
-const data = [
-  { id: 1, name: 'Repo Name #1', full_name: 'user/Repo Name #1', private: false , fork: false },
-  { id: 2, name: 'Repo Name #2', full_name: 'user/Repo Name #2', private: true , fork: false },
-  { id: 3, name: 'Repo Name #3', full_name: 'user/Repo Name #3', private: false , fork: false },
-  { id: 4, name: 'Repo Name #4', full_name: 'user/Repo Name #4', private: false , fork: false },
-  { id: 5, name: 'Repo Name #5', full_name: 'user/Repo Name #5', private: false , fork: false },
-  { id: 6, name: 'Repo Name #6', full_name: 'user/Repo Name #6', private: false , fork: false },
-  { id: 7, name: 'Repo Name #7', full_name: 'user/Repo Name #7', private: false , fork: false },
-  { id: 8, name: 'Repo Name #8', full_name: 'user/Repo Name #8', private: false , fork: false },
-  { id: 9, name: 'Repo Name #9', full_name: 'user/Repo Name #9', private: false , fork: false },
-  { id: 10, name: 'Repo Name #10', full_name: 'user2/Repo Name #10', private: false , fork: true },
-  { id: 11, name: 'Repo Name #11', full_name: 'user2/Repo Name #11', private: false , fork: true },
-];
-
 const Repos = ({ navigation, route }) => {
+  const [reposData, setReposData] = useState([]);
+  async function ReposData(setReposData) {
+    let token = await AsyncStorage.getItem(GithubStorageKey);
+    if (token) {
+      const repos = fetch('https://api.github.com/user/repos', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/vnd.github.v3+json',
+          Authorization: 'token ' + token,
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          let repos = [];
+          data.forEach((repo) =>
+            repos.push({
+              id: repo.id,
+              name: repo.name,
+              full_name: repo.full_name,
+              private: repo.private,
+              fork: repo.fork,
+            })
+          );
+          setReposData(repos);
+        })
+        .catch((err) => console.error(err));
+    }
+  }
+  useEffect(() => {
+    ReposData(setReposData);
+  }, [setReposData]);
+
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => navigation.navigate('RepoRotas',{item: item })}>
+    <TouchableOpacity
+      onPress={() => navigation.navigate('RepoRotas', { item: item })}>
       <View style={styles.row}>
         {iconChange(item)}
         <View>
@@ -46,7 +65,6 @@ const Repos = ({ navigation, route }) => {
             <Text style={styles.nameTxt} numberOfLines={1} ellipsizeMode="tail">
               {item.name}
             </Text>
-            
           </View>
           <View style={styles.msgContainer}>
             <Text style={styles.msgTxt}>{item.full_name}</Text>
@@ -60,7 +78,7 @@ const Repos = ({ navigation, route }) => {
     <>
       <View style={{ flex: 1 }}>
         <FlatList
-          data={data}
+          data={reposData}
           keyExtractor={(item) => {
             return item.id;
           }}
@@ -119,12 +137,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     marginBottom: 15,
   },
-    fab: {
+  fab: {
     position: 'absolute',
     margin: 16,
     right: 0,
     bottom: 0,
-    backgroundColor:"#71e7f0"
+    backgroundColor: '#71e7f0',
   },
 });
 

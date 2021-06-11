@@ -1,8 +1,8 @@
 {
   "expo": {
-    "scheme":"com.maker.pi.hubchat",
+    "scheme":"hubchat",
     "name": "HubChat",
-    "slug": "com.maker.pi.hubchat",
+    "slug": "hubchat",
     "version": "1.0.0",
     "sdkVersion": "41.0.0",
     "platforms": [

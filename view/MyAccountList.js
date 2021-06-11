@@ -62,7 +62,7 @@ const MyAccontList = ({navigation,route}) => {
 
 
 MyAccontList.navigationOptions = {
-  title: 'Chat',
+  title: 'MyAccontList',
 };
 const styles = StyleSheet.create({
   row: {

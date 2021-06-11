@@ -1,4 +1,4 @@
-import React, { useState, useEffect , useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   Text,
@@ -15,12 +15,13 @@ import firebase from '../firebase/fire';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const GithubStorageKey = '@Expo:GithubToken';
 
-const Issues = ({ route, navigation }) => {
+const NewChat = ({ route, navigation }) => {
+  const { membersChats } = route.params;
   const [search, setSearch] = useState('');
   const [filteredDataSource, setFilteredDataSource] = useState([]);
   const [masterDataSource, setMasterDataSource] = useState([]);
-  const [chatName, setChatName] = useState('');
   const [loading, setLoading] = useState(true);
+  const [disable_order_button, setdisable_order_button] = useState(false);
   const db = firebase.firestore();
   const [currentUserGit, setCurrentUserGit] = useState({});
 
@@ -45,27 +46,7 @@ const Issues = ({ route, navigation }) => {
         .catch((err) => console.error(err));
     }
   }
-  function createGroup() {
-    if (chatName.length > 0) {
-      db.collection('Groups')
-        .add({
-          name: chatName,
-          latestMessage: {
-            text: `You have joined the room ${chatName}.`,
-            createdAt: new Date().getTime(),
-          },
-        })
-        .then((docRef) => {
-          docRef.collection('MESSAGES').add({
-            text: `You have joined the room ${chatName}.`,
-            createdAt: new Date().getTime(),
-            system: true,
-          });
-          navigation.navigate('Chat');
-        });
-    }
-  }
-  async function createChat(user) {
+  async function createGroup(user) {
     const currentUser = await UserData(setCurrentUserGit);
     db.collection('CHATS')
       .add({
@@ -89,7 +70,53 @@ const Issues = ({ route, navigation }) => {
         navigation.navigate('Chats');
       });
   }
-const fetchUSERS = useCallback(() => {
+  async function createChat(user) {
+     
+    const currentUser = await UserData(setCurrentUserGit);
+    db.collection('CHATS')
+      .add({
+        id: user.id,
+        username: user.name ? user.name : user.username,
+        username2: currentUserGit.name ? currentUserGit.name : currentUserGit.login,
+        picture: user.profile_picture,
+        picture2: currentUserGit.avatar_url,
+        latestMessage: {
+          text: `Nova Conversa com ${user.name ? user.name : user.username}.`,
+          createdAt: new Date().getTime(),
+        },
+        members: [user.uid, firebase.auth().currentUser.uid],
+      })
+      .then((docRef) => {
+        docRef.collection('MESSAGES').add({
+          text: `Nova Conversa com ${user.name ? user.name : user.username}.`,
+          createdAt: new Date().getTime(),
+          system: true,
+        });
+        navigation.navigate('Chats');
+      });
+      setdisable_order_button(true)
+  }
+  const fetchUSERS = useCallback(() => {
+    db.collection('USERS')
+      .where('uid', 'not-in', membersChats)
+      .get()
+      .then(function (querySnapshot) {
+        const allUsers = [];
+        querySnapshot.forEach((doc) => {
+          const user = doc.data();
+          allUsers.push(user);
+        });
+        setFilteredDataSource(allUsers);
+        setMasterDataSource(allUsers);
+        if (loading) {
+          setLoading(false);
+        }
+      })
+      .catch((error) => {
+        console.log('Error getting documents: ', error);
+      });
+  }, [membersChats, db, loading]);
+  const fetchUsersByCurrent = useCallback(() => {
     db.collection('USERS')
       .where('uid', '!=', firebase.auth().currentUser.uid)
       .get()
@@ -108,18 +135,17 @@ const fetchUSERS = useCallback(() => {
       .catch((error) => {
         console.log('Error getting documents: ', error);
       });
-  },[db,loading])
-
-  useEffect(() => {
-    async function fetchData(){
-        await fetchUSERS();
-    }
-    fetchData()
-  }, [fetchUSERS]);
+  }, [db, loading]);
 
   if (loading) {
     return <Loading />;
   }
+  useEffect(() => {
+    async function fetchData() {
+      await fetchUSERS();
+    }
+    fetchData();
+  }, [fetchUSERS]);
 
   const searchFilterFunction = (text) => {
     // Check if searched text is not blank
@@ -141,23 +167,32 @@ const fetchUSERS = useCallback(() => {
       setSearch(text);
     }
   };
-  const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => createChat(item)}>
-      <View style={styles.row}>
-        <Image source={{ uri: item.profile_picture }} style={styles.pic} />
-        <View>
-          <View style={styles.nameContainer}>
-            <Text style={styles.nameTxt} numberOfLines={1} ellipsizeMode="tail">
-              {item.name ? item.name : item.username}
-            </Text>
-          </View>
-          <View style={styles.msgContainer}>
-            <Text style={styles.msgTxt}>{item.status}</Text>
+  const renderItem = ({ item }) => {
+    return (
+      <TouchableOpacity
+        disabled={disable_order_button}
+  onPress={() => disable_order_button == false ? 
+  createChat(item) : null}
+        >
+        <View style={styles.row}>
+          <Image source={{ uri: item.profile_picture }} style={styles.pic} />
+          <View>
+            <View style={styles.nameContainer}>
+              <Text
+                style={styles.nameTxt}
+                numberOfLines={1}
+                ellipsizeMode="tail">
+                {item.name ? item.name : item.username}
+              </Text>
+            </View>
+            <View style={styles.msgContainer}>
+              <Text style={styles.msgTxt}>{item.status}</Text>
+            </View>
           </View>
         </View>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -179,8 +214,8 @@ const fetchUSERS = useCallback(() => {
   );
 };
 
-Issues.navigationOptions = {
-  title: 'Chat',
+NewChat.navigationOptions = {
+  title: 'NewChat',
 };
 const styles = StyleSheet.create({
   row: {
@@ -220,4 +255,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Issues;
+export default NewChat;
