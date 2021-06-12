@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import firebase from './firebase/fire';
 import AfterLogin from './view/AfterLogin';
 import Rotas from './Rotas';

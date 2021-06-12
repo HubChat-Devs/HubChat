@@ -96,7 +96,7 @@ const IssuesSearch = ({ route, navigation }) => {
 };
 
 IssuesSearch.navigationOptions = {
-  title: 'Chat',
+  title: 'IssuesSearch',
 };
 const styles = StyleSheet.create({
  row: {

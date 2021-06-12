@@ -65,7 +65,7 @@ const Issues = ({ navigation, route }) => {
 };
 
 Issues.navigationOptions = {
-  title: 'Chat',
+  title: 'Issues',
 };
 const styles = StyleSheet.create({
   row: {

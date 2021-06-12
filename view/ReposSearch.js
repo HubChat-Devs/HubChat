@@ -103,7 +103,7 @@ const data = [
   },
 ];
 
-const IssuesSearch = ({ route, navigation }) => {
+const ReposSearch = ({ route, navigation }) => {
   const [search, setSearch] = useState('');
   const [filteredDataSource, setFilteredDataSource] = useState([]);
   const [masterDataSource, setMasterDataSource] = useState([]);
@@ -174,8 +174,8 @@ const IssuesSearch = ({ route, navigation }) => {
   );
 };
 
-IssuesSearch.navigationOptions = {
-  title: 'Chat',
+ReposSearch.navigationOptions = {
+  title: 'ReposSearch',
 };
 const styles = StyleSheet.create({
   row: {
@@ -210,4 +210,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default IssuesSearch;
+export default ReposSearch;

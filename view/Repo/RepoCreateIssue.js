@@ -1,24 +1,17 @@
 import React from 'react';
 import {
-  View,
-  TextInput,
-  Text,
-  StyleSheet,
+  View
 } from 'react-native';
 import * as yup from 'yup';
-import { Button, Colors } from 'react-native-paper';
+import { Button ,TextInput} from 'react-native-paper';
 
 const TextInputBorder = (props) => {
   return (
     <View>
-      <Text style={[styles.baseText, { fontSize: 20, marginBottom: 8 }]}>
-        {props.title}
-      </Text>
       <TextInput
         {...props}
         editable
         maxLength={300}
-        style={{ borderWidth: 2, borderRadius: 10, padding: 15 }}
       />
     </View>
   );
@@ -38,10 +31,12 @@ const CreateIssue = ({ route, navigation }) => {
         }}>
         <TextInputBorder
           autoFocus
+          mode='outlined'
           numberOfLines={1}
           onChangeText={(text) => onChangeTitle(text)}
           value={title}
           placeholder="- Title -"
+          label="Nome da Nova issue"
           title="Nome da Nova issue: "
         />
       </View>
@@ -51,10 +46,12 @@ const CreateIssue = ({ route, navigation }) => {
         }}>
         <TextInputBorder
           multiline
+          mode='outlined'
           numberOfLines={14}
           onChangeText={(text) => onChangeBody(text)}
           value={body}
           placeholder="- Body -"
+          label="Descrição"
           title="Descrição : "
         />
       </View>
@@ -65,7 +62,7 @@ const CreateIssue = ({ route, navigation }) => {
         <Button
           icon="plus"
           mode="contained"
-          color="#3485E4"
+          color="rgb(113, 231, 240)"
           uppercase={false}
           onPress={() => navigation.navigate('RepoIssues')}>
           Criar Issue
@@ -74,11 +71,4 @@ const CreateIssue = ({ route, navigation }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  baseText: {
-    fontWeight: 'bold',
-  },
-});
-
 export default CreateIssue;

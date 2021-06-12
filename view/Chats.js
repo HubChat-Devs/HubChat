@@ -1,13 +1,15 @@
-import React, { setState, useState, useEffect,useCallback } from 'react';
+import React, { setState, useState, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   Text,
   View,
   Image,
   TouchableOpacity,
+  Alert,
   FlatList,
 } from 'react-native';
 import Loading from '../components/Loading';
+import { AntDesign as Icon } from '@expo/vector-icons';
 import { FAB } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import moment from 'moment';
@@ -44,8 +46,31 @@ function LastmessageDate(DateLastMessage) {
 
 const Chats = ({ route, navigation }) => {
   const [chats, setChats] = useState([]);
+  const [membersChats, setMembersChats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentUserGit, setCurrentUserGit] = useState({});
+
+  async function excluirChat(chat) {
+    db.collection('CHATS')
+      .doc(chat)
+      .collection('MESSAGES')
+      .get()
+      .then((res) => {
+        res.forEach((element) => {
+          element.ref.delete();
+        });
+      });
+    await db.collection('CHATS').doc(chat).delete();
+  }
+  const excluirChatButton = (chat) =>
+    Alert.alert('Excluir Chat', 'Deseja Excluir o Chat ? ', [
+      {
+        text: 'Cancel',
+        onPress: () => console.log('Cancel Pressed'),
+        style: 'cancel',
+      },
+      { text: 'OK', onPress: () => excluirChat(chat) },
+    ]);
 
   async function UserData(setUserGit) {
     let token = await AsyncStorage.getItem(GithubStorageKey);
@@ -67,22 +92,14 @@ const Chats = ({ route, navigation }) => {
     }
   }
 
-const  fetchChats = useCallback(() => {
+  const fetchChats = useCallback(() => {
     const unsubscribe = db
       .collection('CHATS')
       .where('members', 'array-contains', firebase.auth().currentUser.uid)
       .onSnapshot((querySnapshot) => {
-        const chatsQuery = querySnapshot.docs.map((documentSnapshot) => {
-          console.log(
-            'teste ',
-            documentSnapshot.data().id,
-            ' : ',
-            currentUserGit.id," -  ",
-            documentSnapshot.id
-          );
+        const chatsQ = querySnapshot.docs.map((documentSnapshot) => {
           return {
-            _id:
-              documentSnapshot.id,
+            _id: documentSnapshot.id,
             // give defaults
             name:
               documentSnapshot.data().id != currentUserGit.id
@@ -100,8 +117,22 @@ const  fetchChats = useCallback(() => {
             ...documentSnapshot.data(),
           };
         });
+        setChats(
+          chatsQ.sort((a, b) =>
+            a.latestMessage.createdAt < b.latestMessage.createdAt ? 1 : -1
+          )
+        );
 
-        setChats(chatsQuery);
+        let member = [];
+        chatsQ.forEach((membersID) => {
+          membersID.members.forEach((memberUID) => {
+            if (memberUID != firebase.auth().currentUser.uid) {
+              member.push(memberUID);
+            }
+          });
+        });
+        member.push(firebase.auth().currentUser.uid);
+        setMembersChats(member);
 
         if (loading) {
           setLoading(false);
@@ -112,19 +143,19 @@ const  fetchChats = useCallback(() => {
      * unsubscribe listener
      */
     return () => unsubscribe();
-  },[loading,currentUserGit.id])
+  }, [loading, currentUserGit.id]);
 
   useEffect(() => {
-    async function fetchData(){
+    async function fetchData() {
       if (currentUserGit.login == null) {
         console.log('Atualizando User');
         await UserData(setCurrentUserGit);
-    } else {
+      } else {
         await fetchChats(currentUserGit);
-    }
+      }
     }
     fetchData();
-  }, [fetchChats,currentUserGit]);
+  }, [fetchChats, currentUserGit]);
 
   if (loading) {
     return <Loading />;
@@ -133,7 +164,8 @@ const  fetchChats = useCallback(() => {
   const renderItem = ({ item }) => {
     return (
       <TouchableOpacity
-        onPress={() => navigation.navigate('Chat',{chat: item})}>
+        onPress={() => navigation.navigate('Chat', { chat: item })}
+        onLongPress={() => excluirChatButton(item._id)}>
         <View style={styles.row}>
           <Image source={{ uri: item.profile_picture }} style={styles.pic} />
           <View>
@@ -166,15 +198,23 @@ const  fetchChats = useCallback(() => {
   return (
     <View style={{ flex: 1 }}>
       <StatusBar style="light" />
-      <FlatList
-        data={chats}
-        keyExtractor={(item) => item._id}
-        renderItem={renderItem}
-      />
+      {!chats[0] ? (
+        <View style={styles.noChats}>
+          <Text style={styles.txtAlertBottom}>
+            <Icon name="frowno" size={20} /> Seja Mais Sociável
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={chats}
+          keyExtractor={(item) => item._id}
+          renderItem={renderItem}
+        />
+      )}
       <FAB
         style={styles.fab}
         icon="message-plus-outline"
-        onPress={() => navigation.navigate('NewChat')}
+        onPress={() => navigation.navigate('NewChat', { membersChats })}
       />
     </View>
   );
@@ -231,6 +271,19 @@ const styles = StyleSheet.create({
     fontWeight: '200',
     color: '#777',
     fontSize: 13,
+  },
+  noChats: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  txtAlertBottom: {
+    fontWeight: '200',
+    color: '#777',
+    fontSize: 17,
+    alignSelf: 'center',
+    justifyContent: 'flex-end',
+    marginBottom: 15,
   },
 });
 
