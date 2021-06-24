@@ -1,7 +1,9 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Button, Text, Image, StyleSheet } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import { HeaderBackButton } from '@react-navigation/stack';
 import { Octicons,Entypo,EvilIcons} from '@expo/vector-icons';
 import 'react-native-gesture-handler';
 
@@ -15,6 +17,8 @@ import ReposSearch from './view/ReposSearch';
 import ReposRotas from './view/Repo/RepoRotas'
 import IssueSearch from './view/IssueSearch';
 import Minha_Conta from './view/MyAccountList';
+import MyProfile from './view/MyProfile';
+import signOutAsync from './view/AfterLogin';
 
 const Stack = createStackNavigator();
 const Tab = createMaterialTopTabNavigator();
@@ -88,7 +92,8 @@ function Rotas() {
       <Stack.Screen name="IssueSearch" component={IssueSearch} headerMode="none" />
       <Stack.Screen name="Repositorio Search" component={ReposSearch} headerMode="none" />
       <Stack.Screen name="RepoRotas" component={ReposRotas} options={{headerShown: false}} />
-      <Stack.Screen name="Calendario" component={Calendario}  />
+      <Stack.Screen name="My Profile" component={MyProfile}  options={{ title: 'Meu Perfil' }} />
+      <Stack.Screen name="Calendario" component={Calendario} />
       <Stack.Screen
         name="Chat"
         component={Chat}

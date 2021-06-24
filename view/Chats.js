@@ -1,4 +1,4 @@
-import React, { setState, useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   Text,
@@ -63,13 +63,13 @@ const Chats = ({ route, navigation }) => {
     await db.collection('CHATS').doc(chat).delete();
   }
   const excluirChatButton = (chat) =>
-    Alert.alert('Excluir Chat', 'Deseja Excluir o Chat ? ', [
+    Alert.alert('Excluir Chat', 'Deseja Excluir a Conversa Com '+ chat.name +' ? ', [
       {
         text: 'Cancel',
         onPress: () => console.log('Cancel Pressed'),
         style: 'cancel',
       },
-      { text: 'OK', onPress: () => excluirChat(chat) },
+      { text: 'OK', onPress: () => excluirChat(chat._id) },
     ]);
 
   async function UserData(setUserGit) {
@@ -111,6 +111,7 @@ const Chats = ({ route, navigation }) => {
                 ? documentSnapshot.data().picture
                 : documentSnapshot.data().picture2,
             latestMessage: {
+              _id: '',
               text: '',
             },
             members: [],
@@ -165,7 +166,7 @@ const Chats = ({ route, navigation }) => {
     return (
       <TouchableOpacity
         onPress={() => navigation.navigate('Chat', { chat: item })}
-        onLongPress={() => excluirChatButton(item._id)}>
+        onLongPress={() => excluirChatButton(item)}>
         <View style={styles.row}>
           <Image source={{ uri: item.profile_picture }} style={styles.pic} />
           <View>
@@ -186,7 +187,7 @@ const Chats = ({ route, navigation }) => {
                 style={[styles.msgTxt, { width: 160 }]}
                 numberOfLines={1}
                 ellipsizeMode="tail">
-                {item.latestMessage.text}
+                {firebase.auth().currentUser.uid == item.latestMessage._id ? 'Você: '+item.latestMessage.text : item.latestMessage.text}
               </Text>
             </View>
           </View>
@@ -265,7 +266,7 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 0,
     bottom: 0,
-    backgroundColor: '#71e7f0',
+    backgroundColor:"#3485E4",
   },
   mblTxt: {
     fontWeight: '200',

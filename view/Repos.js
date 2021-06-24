@@ -5,6 +5,7 @@ import {
   View,
   TouchableOpacity,
   FlatList,
+  RefreshControl
 } from 'react-native';
 import { FAB } from 'react-native-paper';
 import { Octicons as Icon } from '@expo/vector-icons';
@@ -24,10 +25,16 @@ function iconChange(item) {
 }
 const Repos = ({ navigation, route }) => {
   const [reposData, setReposData] = useState([]);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    ReposData(setReposData);
+  }, []);
+
   async function ReposData(setReposData) {
     let token = await AsyncStorage.getItem(GithubStorageKey);
     if (token) {
-      const repos = fetch('https://api.github.com/user/repos', {
+      const repos = fetch('https://api.github.com/user/repos?sort=updated', {
         method: 'GET',
         headers: {
           Accept: 'application/vnd.github.v3+json',
@@ -44,12 +51,15 @@ const Repos = ({ navigation, route }) => {
               full_name: repo.full_name,
               private: repo.private,
               fork: repo.fork,
+              owner: repo.owner.login,
             })
           );
           setReposData(repos);
+          setRefreshing(false);
         })
         .catch((err) => console.error(err));
     }
+    
   }
   useEffect(() => {
     ReposData(setReposData);
@@ -57,7 +67,7 @@ const Repos = ({ navigation, route }) => {
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
-      onPress={() => navigation.navigate('RepoRotas', { item: item })}>
+      onPress={() => navigation.navigate('RepoRotas', { repo: item })}>
       <View style={styles.row}>
         {iconChange(item)}
         <View>
@@ -79,6 +89,12 @@ const Repos = ({ navigation, route }) => {
       <View style={{ flex: 1 }}>
         <FlatList
           data={reposData}
+          refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
+        }
           keyExtractor={(item) => {
             return item.id;
           }}
@@ -142,7 +158,7 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 0,
     bottom: 0,
-    backgroundColor: '#71e7f0',
+    backgroundColor:"#3485E4",
   },
 });
 

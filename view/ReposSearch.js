@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect , useCallback } from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,6 +10,9 @@ import { AntDesign as Icon } from '@expo/vector-icons';
 import { Octicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { Input } from 'react-native-elements';
+import Loading from '../components/Loading';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+const GithubStorageKey = '@Expo:GithubToken';
 
 function iconChange(item) {
   if (!item.private) {
@@ -23,95 +26,51 @@ function iconChange(item) {
   }
 }
 
-const data = [
-  {
-    id: 1,
-    name: 'Repo Name #1',
-    full_name: 'user/Repo Name #1',
-    private: false,
-    fork: false,
-  },
-  {
-    id: 2,
-    name: 'Repo Name #2',
-    full_name: 'user/Repo Name #2',
-    private: true,
-    fork: false,
-  },
-  {
-    id: 3,
-    name: 'Repo Name #3',
-    full_name: 'user/Repo Name #3',
-    private: false,
-    fork: false,
-  },
-  {
-    id: 4,
-    name: 'Repo Name #4',
-    full_name: 'user/Repo Name #4',
-    private: false,
-    fork: false,
-  },
-  {
-    id: 5,
-    name: 'Repo Name #5',
-    full_name: 'user/Repo Name #5',
-    private: false,
-    fork: false,
-  },
-  {
-    id: 6,
-    name: 'Repo Name #6',
-    full_name: 'user/Repo Name #6',
-    private: false,
-    fork: false,
-  },
-  {
-    id: 7,
-    name: 'Repo Name #7',
-    full_name: 'user/Repo Name #7',
-    private: false,
-    fork: false,
-  },
-  {
-    id: 8,
-    name: 'Repo Name #8',
-    full_name: 'user/Repo Name #8',
-    private: false,
-    fork: false,
-  },
-  {
-    id: 9,
-    name: 'Repo Name #9',
-    full_name: 'user/Repo Name #9',
-    private: false,
-    fork: false,
-  },
-  {
-    id: 10,
-    name: 'Repo Name #10',
-    full_name: 'user2/Repo Name #10',
-    private: false,
-    fork: true,
-  },
-  {
-    id: 11,
-    name: 'Repo Name #11',
-    full_name: 'user2/Repo Name #11',
-    private: false,
-    fork: true,
-  },
-];
-
 const ReposSearch = ({ route, navigation }) => {
   const [search, setSearch] = useState('');
   const [filteredDataSource, setFilteredDataSource] = useState([]);
   const [masterDataSource, setMasterDataSource] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const ReposData = useCallback(async () => {
+    let token = await AsyncStorage.getItem(GithubStorageKey);
+    if (token) {
+      const repos = fetch('https://api.github.com/user/repos?sort=updated', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/vnd.github.v3+json',
+          Authorization: 'token ' + token,
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          let repos = [];
+          data.forEach((repo) =>
+            repos.push({
+              id: repo.id,
+              name: repo.name,
+              full_name: repo.full_name,
+              private: repo.private,
+              fork: repo.fork,
+              owner: repo.owner.login,
+            })
+          );
+          setFilteredDataSource(repos);
+          setMasterDataSource(repos);
+           if (loading) {
+          setLoading(false);
+        }
+        })
+        .catch((err) => console.error(err));
+    }
+  },[loading])
 
   useEffect(() => {
-    setFilteredDataSource(data);
-    setMasterDataSource(data);
-  }, []);
+    ReposData();
+  }, [ReposData]);
+
+    if (loading) {
+    return <Loading />;
+  }
 
   const searchFilterFunction = (text) => {
     // Check if searched text is not blank
@@ -137,7 +96,8 @@ const ReposSearch = ({ route, navigation }) => {
     }
   };
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => navigation.navigate('RepoRotas',{item: item })}>
+    <TouchableOpacity
+      onPress={() => navigation.navigate('RepoRotas', { repo: item  })}>
       <View style={styles.row}>
         {iconChange(item)}
         <View>
@@ -165,7 +125,7 @@ const ReposSearch = ({ route, navigation }) => {
         renderItem={renderItem}
       />
       <Input
-        placeholder="Pesquisar Repositórios"
+        placeholder="Pesquisar Repositório"
         onChangeText={(text) => searchFilterFunction(text)}
         value={search}
         leftIcon={<Icon name="search1" size={24} color="black" />}

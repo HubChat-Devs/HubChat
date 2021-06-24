@@ -10,7 +10,6 @@ import {
 import { AntDesign as Icon } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { Input } from 'react-native-elements';
-import Loading from '../components/Loading';
 import firebase from '../firebase/fire';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const GithubStorageKey = '@Expo:GithubToken';
@@ -137,9 +136,6 @@ const NewChat = ({ route, navigation }) => {
       });
   }, [db, loading]);
 
-  if (loading) {
-    return <Loading />;
-  }
   useEffect(() => {
     async function fetchData() {
       await fetchUSERS();
@@ -182,11 +178,11 @@ const NewChat = ({ route, navigation }) => {
                 style={styles.nameTxt}
                 numberOfLines={1}
                 ellipsizeMode="tail">
-                {item.name ? item.name : item.username}
+                {item.username}
               </Text>
             </View>
             <View style={styles.msgContainer}>
-              <Text style={styles.msgTxt}>{item.status}</Text>
+              <Text style={styles.msgTxt}>{item.name}</Text>
             </View>
           </View>
         </View>

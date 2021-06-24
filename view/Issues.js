@@ -1,31 +1,72 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
   FlatList,
+  Linking,
+  RefreshControl,
 } from 'react-native';
 import { FAB } from 'react-native-paper';
 import { AntDesign as Icon } from '@expo/vector-icons';
-
-const data = [
-  { id: 1, name_issue: 'Issue Title #1', repo: 'Repo name', status: 'Closed' },
-  { id: 2, name_issue: 'Issue Title #2', repo: 'Repo name', status: 'Open' },
-  { id: 3, name_issue: 'Issue Title #3', repo: 'Repo name', status: 'Open' },
-  { id: 4, name_issue: 'Issue Title #4', repo: 'Repo name', status: 'Closed' },
-  { id: 5, name_issue: 'Issue Title #5', repo: 'Repo name', status: 'Open' },
-  { id: 6, name_issue: 'Issue Title #6', repo: 'Repo name', status: 'Open' },
-  { id: 7, name_issue: 'Issue Title #7', repo: 'Repo name', status: 'Open' },
-  { id: 8, name_issue: 'Issue Title #8', repo: 'Repo name', status: 'Open' },
-  { id: 9, name_issue: 'Issue Title #9', repo: 'Repo name', status: 'Open' },
-  { id: 10, name_issue: 'Issue Title #10', repo: 'Repo name', status: 'Open' },
-  { id: 11, name_issue: 'Issue Title #11', repo: 'Repo name', status: 'Open' },
-];
+import Loading from '../components/Loading';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+const GithubStorageKey = '@Expo:GithubToken';
 
 const Issues = ({ navigation, route }) => {
+  const [issuesData, setIssuesData] = useState([]);
+  const [filter, setFilter] = useState('assigned');
+  const [refreshing, setRefreshing] = React.useState(false);
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    IssuesData(setIssuesData, filter);
+  }, [IssuesData,filter]);
+  const [loading, setLoading] = useState(true);
+
+  const IssuesData = useCallback(async (setIssuesData, filter) => {
+    let token = await AsyncStorage.getItem(GithubStorageKey);
+    if (token) {
+      const repos = fetch('https://api.github.com/issues?filter=' + filter, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/vnd.github.v3+json',
+          Authorization: 'token ' + token,
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          let issues = [];
+          data.forEach((issue) =>
+          !issue.pull_request &&
+            issues.push({
+              id: issue.id,
+              name_issue: issue.title,
+              status:
+                issue.state.charAt(0).toUpperCase() + issue.state.slice(1),
+              number: issue.number,
+              repo: issue.repository.full_name,
+              html_url: issue.html_url,
+            })
+          );
+          setIssuesData(issues);
+          setRefreshing(false);
+          if (loading) {
+          setLoading(false);
+        }
+        })
+        .catch((err) => console.error(err));
+    }
+  },[loading])
+  useEffect(() => {
+    IssuesData(setIssuesData, 'assigned');
+  }, [IssuesData,setIssuesData]);
+  
+  if (loading) {
+    return <Loading />;
+  }
   const renderItem = ({ item }) => (
-    <TouchableOpacity>
+    <TouchableOpacity onPress={() => Linking.openURL(item.html_url)}>
       <View style={styles.row}>
         <Icon name="exclamationcircleo" size={30} color="black" />
         <View>
@@ -47,7 +88,10 @@ const Issues = ({ navigation, route }) => {
     <>
       <View style={{ flex: 1 }}>
         <FlatList
-          data={data}
+          data={issuesData}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
           keyExtractor={(item) => {
             return item.id;
           }}
@@ -58,7 +102,9 @@ const Issues = ({ navigation, route }) => {
       <FAB
         style={styles.fab}
         icon="magnify"
-        onPress={() => navigation.navigate('IssueSearch')}
+        onPress={() =>
+          navigation.navigate('IssueSearch', { issues: issuesData })
+        }
       />
     </>
   );
@@ -111,12 +157,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     marginBottom: 15,
   },
-    fab: {
+  fab: {
     position: 'absolute',
     margin: 16,
     right: 0,
     bottom: 0,
-    backgroundColor:"#71e7f0"
+    backgroundColor:"#3485E4",
   },
 });
 

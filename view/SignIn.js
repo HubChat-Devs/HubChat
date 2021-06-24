@@ -34,12 +34,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#ecf0f1',
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height,
     margin:0,
   },
   logo: {
     fontWeight: 'bold',
-    fontSize: 50,
-    color: '#fb5b5a',
+    fontSize: 70,
+    color: '#303030',
     marginBottom: 40,
   },
   loginBtn: {
