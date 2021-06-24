@@ -1,4 +1,4 @@
-import React, {  useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View } from 'react-native';
 import { GiftedChat, Send } from 'react-native-gifted-chat';
 import { FontAwesome as Icon } from '@expo/vector-icons';

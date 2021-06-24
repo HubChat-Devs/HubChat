@@ -25,7 +25,8 @@ function iconChange(item){
        return (<Octicons name="lock" size={30}  style={{marginLeft:20,marginRight:15}} color="orange" />)
      }
 }
-function TabStack() {
+function TabStack({route}) {
+  const { repo } = route.params;
   return (
     <Tab.Navigator
       initialRouteName="RepoIssues"
@@ -46,6 +47,7 @@ function TabStack() {
       <Tab.Screen
         name="RepoIssues"
         component={Issues}
+        initialParams={{repo}}
         options={{
           tabBarLabel: ({ color, size }) => (
             <>
@@ -60,6 +62,7 @@ function TabStack() {
       <Tab.Screen
         name="RepoPullRequest"
         component={PullRequest}
+        initialParams={{repo}}
         options={{
           tabBarLabel: ({ color, size }) => (
             <>
@@ -74,6 +77,7 @@ function TabStack() {
 }
 
 function Rotas({ route, navigation }) {
+  const { repo } = route.params;
   return (
     <Stack.Navigator
       initialRouteName="TabStack"
@@ -85,21 +89,22 @@ function Rotas({ route, navigation }) {
       <Stack.Screen
         name="TabStack"
         component={TabStack}
+        initialParams={{repo: repo}}
         options={{
           headerTitle: (props) => (
             <View {...props} style={styles.row} >
-              {iconChange(route.params.item)}
+              {iconChange(repo)}
               <View>
                 <View style={styles.nameContainer}>
                   <Text
                     style={styles.nameTxt}
                     numberOfLines={1}
                     ellipsizeMode="tail">
-                    {route.params.item.name}
+                    {repo.name}
                   </Text>
                 </View>
                 <View style={styles.msgContainer}>
-                  <Text style={styles.msgTxt}>{route.params.item.full_name}</Text>
+                  <Text style={styles.msgTxt}>{repo.full_name}</Text>
                 </View>
               </View>
             </View>
@@ -123,7 +128,7 @@ function Rotas({ route, navigation }) {
                   </Text>
                 </View>
                 <View style={styles.msgContainer}>
-                  <Text style={styles.msgTxt}>{route.params.item.full_name}</Text>
+                  <Text style={styles.msgTxt}>{repo.full_name}</Text>
                 </View>
               </View>
             </View>
@@ -136,7 +141,7 @@ function Rotas({ route, navigation }) {
         options={{
           headerTitle: (props) => (
             <View {...props} style={styles.row} >
-              <Octicons name="issue-opened" size={30}  color="white" />
+              <Octicons name="git-pull-request" size={30}  color="white" />
               <View>
                 <View style={styles.nameContainer}>
                   <Text
@@ -147,7 +152,7 @@ function Rotas({ route, navigation }) {
                   </Text>
                 </View>
                 <View style={styles.msgContainer}>
-                  <Text style={styles.msgTxt}>{route.params.item.full_name}</Text>
+                  <Text style={styles.msgTxt}>{repo.full_name}</Text>
                 </View>
               </View>
             </View>
@@ -171,7 +176,7 @@ function Rotas({ route, navigation }) {
                   </Text>
                 </View>
                 <View style={styles.msgContainer}>
-                  <Text style={styles.msgTxt}>{route.params.item.full_name}</Text>
+                  <Text style={styles.msgTxt}>{repo.full_name}</Text>
                 </View>
               </View>
             </View>

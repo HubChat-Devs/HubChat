@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback} from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,23 +9,66 @@ import {
 import { AntDesign as Icon } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { Input } from 'react-native-elements';
-
-const data = [
-  { id: 1, name_issue: 'Issue Title #1', repo: 'Repo name', status: 'Closed' },
-  { id: 2, name_issue: 'Issue Title #2', repo: 'Repo name', status: 'Open' },
-  { id: 3, name_issue: 'Issue Title #3', repo: 'Repo name', status: 'Open' },
-  { id: 4, name_issue: 'Issue Title #4', repo: 'Repo name', status: 'Closed' },
-];
-
+import Loading from '../../components/Loading';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+const GithubStorageKey = '@Expo:GithubToken';
 const IssuesSearch = ({ route, navigation }) => {
+  const { repo } = route.params;
   const [search, setSearch] = useState('');
   const [filteredDataSource, setFilteredDataSource] = useState([]);
   const [masterDataSource, setMasterDataSource] = useState([]);
+  const [filter, setFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
+
+const IssuesData = useCallback(async (repo,filter) => {
+    let token = await AsyncStorage.getItem(GithubStorageKey);
+    if (token) {
+      const repos = fetch(
+        'https://api.github.com/repos/' +
+          repo.owner +
+          '/' +
+          repo.name +
+          '/issues?state=' +
+          filter,
+        {
+          method: 'GET',
+          headers: {
+            Accept: 'application/vnd.github.v3+json',
+            Authorization: 'token ' + token,
+          },
+        }
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          let issues = [];
+          data.forEach(
+            (issue) =>
+              !issue.pull_request &&
+              issues.push({
+                id: issue.id,
+                name_issue: issue.title,
+                status: issue.state,
+                number: issue.number,
+                repo: repo.full_name,
+              })
+          );
+          setFilteredDataSource(issues);
+          setMasterDataSource(issues);
+          if (loading) {
+            setLoading(false);
+          }
+        })
+        .catch((err) => console.error(err));
+    }
+  },[loading])
 
   useEffect(() => {
-    setFilteredDataSource(data);
-    setMasterDataSource(data);
-  }, []);
+    IssuesData(repo,filter);
+  }, [IssuesData,repo, filter]);
+  
+  if (loading) {
+    return <Loading />;
+  }
 
   const searchFilterFunction = (text) => {
     // Check if searched text is not blank
@@ -92,7 +135,7 @@ IssuesSearch.navigationOptions = {
   title: 'Chat',
 };
 const styles = StyleSheet.create({
- row: {
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
     borderColor: '#DCDCDC',

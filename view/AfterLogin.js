@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { setState, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { View, Image, Text, StyleSheet } from 'react-native';
+import { View, Button, Image, Text, StyleSheet ,Dimensions} from 'react-native';
 import IconButton from '../components/IconButton';
+import WaveAfterLogin from '../components/WaveAfterlogin';
 import signOutAsync from '../firebase/signOut';
 import firebase from '../firebase/fire';
 //import saveUserToFirestore from '../App';
@@ -17,7 +18,7 @@ async function logon(setAfterLogon,userGit) {
       userRef.doc(firebase.auth().currentUser.uid).set({
         uid: firebase.auth().currentUser.uid,
         id: userGit.id ,
-        name: firebase.auth().currentUser.displayName == '' ? firebase.auth().currentUser.displayName :  userGit.login,
+        name: firebase.auth().currentUser.displayName ? firebase.auth().currentUser.displayName :  userGit.login,
         username: userGit.login,
         email: firebase.auth().currentUser.email,
         profile_picture: firebase.auth().currentUser.photoURL,
@@ -57,11 +58,12 @@ const Home = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
+    <WaveAfterLogin customStyles={styles.svgCurve}/>
       <Image
         source={{ uri: route.params.user.photoURL }}
         style={styles.image}
       />
-      <Text style={styles.paragraph}>{userGit.login}</Text>
+      <Text style={styles.paragraph}>{userGit.name == '' ? userGit.login : userGit.name }</Text>
       {userGit.login && 
       <>
       <IconButton
@@ -103,6 +105,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     color: '#34495e',
+  },
+  svgCurve: {
+    position: 'absolute',
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height
   },
 });
 

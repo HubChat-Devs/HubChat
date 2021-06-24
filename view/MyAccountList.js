@@ -17,7 +17,7 @@ const data =  [
 function onPressionar(item , navigation){
   switch(item.id){
     case 1:
-      console.log('Meu Perfil Clicado') 
+      navigation.navigate('My Profile')
       break //Tela Perfil
     case 2:
       navigation.navigate('Calendario')

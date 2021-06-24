@@ -1,39 +1,72 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect ,useCallback } from 'react';
 import {
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
   FlatList,
+  Linking,
 } from 'react-native';
 import { AntDesign as Icon } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { Input } from 'react-native-elements';
-
-const data = [
-  { id: 1, name_issue: 'Issue Title #1', repo: 'Repo name', status: 'Closed' },
-  { id: 2, name_issue: 'Issue Title #2', repo: 'Repo name', status: 'Open' },
-  { id: 3, name_issue: 'Issue Title #3', repo: 'Repo name', status: 'Open' },
-  { id: 4, name_issue: 'Issue Title #4', repo: 'Repo name', status: 'Closed' },
-  { id: 5, name_issue: 'Issue Title #5', repo: 'Repo name', status: 'Open' },
-  { id: 6, name_issue: 'Issue Title #6', repo: 'Repo name', status: 'Open' },
-  { id: 7, name_issue: 'Issue Title #7', repo: 'Repo name', status: 'Open' },
-  { id: 8, name_issue: 'Issue Title #8', repo: 'Repo name', status: 'Open' },
-  { id: 9, name_issue: 'Issue Title #9', repo: 'Repo name', status: 'Open' },
-  { id: 10, name_issue: 'Issue Title #10', repo: 'Repo name', status: 'Open' },
-  { id: 11, name_issue: 'Issue Title #11', repo: 'Repo name', status: 'Open' },
-];
+import Loading from '../components/Loading';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+const GithubStorageKey = '@Expo:GithubToken';
 
 const IssuesSearch = ({ route, navigation }) => {
   const [search, setSearch] = useState('');
   const [filteredDataSource, setFilteredDataSource] = useState([]);
   const [masterDataSource, setMasterDataSource] = useState([]);
+  const [filter, setFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
+
+const IssuesData = useCallback(async (filter) => {
+    let token = await AsyncStorage.getItem(GithubStorageKey);
+    if (token) {
+      const repos = fetch(
+        'https://api.github.com/issues?state=all&filter=' + filter,
+        {
+          method: 'GET',
+          headers: {
+            Accept: 'application/vnd.github.v3+json',
+            Authorization: 'token ' + token,
+          },
+        }
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          let issues = [];
+          data.forEach(
+            (issue) =>
+              !issue.pull_request &&
+              issues.push({
+                id: issue.id,
+                name_issue: issue.title,
+                status:
+                issue.state.charAt(0).toUpperCase() + issue.state.slice(1),
+                number: issue.number,
+                repo: issue.repository.full_name,
+                html_url: issue.html_url
+              })
+          );
+          setFilteredDataSource(issues);
+          setMasterDataSource(issues);
+          if (loading) {
+            setLoading(false);
+          }
+        })
+        .catch((err) => console.error(err));
+    }
+  },[loading])
 
   useEffect(() => {
-    setFilteredDataSource(data);
-    setMasterDataSource(data);
-  }, []);
+    IssuesData(filter);
+  }, [IssuesData,filter]);
 
+  if (loading) {
+    return <Loading />;
+  }
   const searchFilterFunction = (text) => {
     // Check if searched text is not blank
     if (text) {
@@ -56,8 +89,9 @@ const IssuesSearch = ({ route, navigation }) => {
       setSearch(text);
     }
   };
+
   const renderItem = ({ item }) => (
-    <TouchableOpacity>
+    <TouchableOpacity onPress={() => Linking.openURL(item.html_url)}>
       <View style={styles.row}>
         <Icon name="exclamationcircleo" size={30} color="black" />
         <View>
@@ -86,7 +120,7 @@ const IssuesSearch = ({ route, navigation }) => {
         renderItem={renderItem}
       />
       <Input
-        placeholder="Pesquisar Novo Usuario"
+        placeholder="Pesquisar Issue"
         onChangeText={(text) => searchFilterFunction(text)}
         value={search}
         leftIcon={<Icon name="search1" size={24} color="black" />}
@@ -99,7 +133,7 @@ IssuesSearch.navigationOptions = {
   title: 'IssuesSearch',
 };
 const styles = StyleSheet.create({
- row: {
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
     borderColor: '#DCDCDC',

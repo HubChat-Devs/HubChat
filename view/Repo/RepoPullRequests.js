@@ -1,17 +1,22 @@
-import React from 'react';
+import React, { useState, useEffect , useCallback } from 'react';
 import {
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
   FlatList,
+  Linking,
+  RefreshControl,
 } from 'react-native';
+import Loading from '../../components/Loading';
 import { FAB } from 'react-native-paper';
 import { Octicons as Icon } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+const GithubStorageKey = '@Expo:GithubToken';
 
 function iconChange(item){
     if(!item.merged_at){
-      if(item.state != "open"){
+      if(item.status != "Open"){
         return (<Icon name="git-pull-request" size={30} color="red" />)
         
       }else{
@@ -21,16 +26,60 @@ function iconChange(item){
        return (<Icon name="git-merge" size={30} color="#a371f7" />)
      }
 }
-const data = [
-  { id: 1, title: 'Pull Request #1', repo: 'master -> teste', state:"closed" ,merged_at:"not null"},
-  { id: 2, title: 'Pull Request #2', repo: 'master -> teste', state:"open" ,merged_at:"not null"},
-  { id: 3,  title: 'Pull Request #3', repo: 'master -> teste', state:"open" ,merged_at:null},
-  { id: 4, title: 'Pull Request #4', repo: 'master -> teste', state:"closed"  ,merged_at:null},
-];
 
 const Issues = ({ navigation, route }) => {
+  const { repo } = route.params;
+  const [pullsData, setPullsData] = useState([]);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    PullsData(repo);
+  }, [PullsData,repo]);
+  const [loading, setLoading] = useState(true);
+
+
+  const PullsData = useCallback(async (repo) => {
+    let token = await AsyncStorage.getItem(GithubStorageKey);
+    if (token) {
+      const repos = fetch('https://api.github.com/repos/'+repo.owner+'/'+repo.name+'/pulls?state=all', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/vnd.github.v3+json',
+          Authorization: 'token ' + token
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          let pulls = [];
+          data.forEach((pull) =>
+            pulls.push({
+              id: pull.id,
+              title: pull.title,
+              status: (pull.state.charAt(0).toUpperCase() + pull.state.slice(1)),
+              branches: pull.head.ref +" -> "+ pull.base.ref,
+              html_url: pull.html_url,
+              merged_at: pull.merged_at
+            })
+          );
+          setPullsData(pulls);
+          setRefreshing(false);
+           if (loading) {
+          setLoading(false);
+        }
+        })
+        .catch((err) => console.error(err));
+    }
+  },[loading])
+
+  useEffect(() => {
+    PullsData(repo);
+  }, [PullsData,repo]);
+  if (loading) {
+    return <Loading />;
+  }
+
   const renderItem = ({ item }) => (
-    <TouchableOpacity>
+    <TouchableOpacity onPress={() => Linking.openURL(item.html_url)}>
       <View style={styles.row}>
         {iconChange(item)}
         <View>
@@ -41,7 +90,7 @@ const Issues = ({ navigation, route }) => {
             <Text style={styles.mblTxt}>{item.status}</Text>
           </View>
           <View style={styles.msgContainer}>
-            <Text style={styles.msgTxt}>{item.repo}</Text>
+            <Text style={styles.msgTxt}>{item.branches}</Text>
           </View>
         </View>
       </View>
@@ -52,7 +101,13 @@ const Issues = ({ navigation, route }) => {
     <>
       <View style={{ flex: 1 }}>
         <FlatList
-          data={data}
+          data={pullsData}
+           refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
+        }
           keyExtractor={(item) => {
             return item.id;
           }}
@@ -63,7 +118,7 @@ const Issues = ({ navigation, route }) => {
       <FAB
         style={styles.fab}
         icon="magnify"
-        onPress={() => navigation.navigate('RepoPullRequestSearch')}
+        onPress={() => navigation.navigate('RepoPullRequestSearch' , {repo})}
       />
     </>
   );
