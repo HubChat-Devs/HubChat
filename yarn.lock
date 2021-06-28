@@ -1908,7 +1908,7 @@
     nocache "^2.1.0"
     pretty-format "^25.1.0"
     serve-static "^1.13.1"
-    ws "^1.1.0"
+    ws "^5.2.3"
 
 "@react-native-community/cli-tools@^4.13.0":
   version "4.13.0"
@@ -4670,7 +4670,7 @@ metro-inspector-proxy@0.59.0:
   dependencies:
     connect "^3.6.5"
     debug "^2.2.0"
-    ws "^1.1.5"
+    ws "^5.2.3"
     yargs "^14.2.0"
 
 metro-minify-uglify@0.59.0:
@@ -4824,7 +4824,7 @@ metro@0.59.0, metro@^0.59.0:
     temp "0.8.3"
     throat "^4.1.0"
     wordwrap "^1.0.0"
-    ws "^1.1.5"
+    ws "^5.2.3"
     xpipe "^1.0.5"
     yargs "^14.2.0"
 
