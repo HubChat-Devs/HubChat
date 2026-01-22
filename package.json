@@ -36,7 +36,7 @@
     "dayjs": "*",
     "react-native-elements": "*",
     "yup": "*",
-    "lodash": "4.17.21",
+    "lodash": "4.17.23",
     "react-native-calendars": "*",
     "@firebase/app": "*",
     "@firebase/firestore": "*",
